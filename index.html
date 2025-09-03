@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earth AI - Next-Generation Crystal Planet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+        body {
+            font-family: 'Space Mono', monospace;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M15 15l6 6M17 10h.01M9 10h.01M17 15h.01M9 15h.01M12 12h.01M19 5v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2z"></path></svg>') 12 12, auto;
+            overflow: hidden;
+            background-color: #0d1117;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100vw;
+            height: 100vh;
+        }
+        .text-glow {
+            text-shadow: 0 0 5px #00c0ff, 0 0 10px #0066ff, 0 0 15px #0066ff;
+        }
+        .btn-glow {
+            box-shadow: 0 0 5px #00c0ff, 0 0 10px #0066ff, 0 0 20px #0066ff;
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 10px #e0ffff, 0 0 20px #8a2be2, 0 0 40px #8a2be2;
+            transform: scale(1.05);
+        }
+        .nav-link.active {
+            box-shadow: 0 2px 0 0 #e0ffff;
+            animation: pulse-glow 1.5s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 2px 0 0 #e0ffff, 0 0 5px #e0ffff; }
+            50% { box-shadow: 0 2px 0 0 #8a2be2, 0 0 10px #8a2be2; }
+        }
+        .holographic-card {
+            background: rgba(0, 192, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 192, 255, 0.3);
+            transition: all 0.3s ease-in-out;
+            transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+        }
+        .holographic-card:hover {
+            transform: perspective(1000px) rotateY(5deg) rotateX(5deg);
+            box-shadow: 0 0 20px rgba(0, 192, 255, 0.5), 0 0 40px rgba(138, 43, 226, 0.3);
+        }
+        .typing-effect::after {
+            content: '|';
+            animation: blink 0.7s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-black text-[#E0FFFF] antialiased">
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 p-6 backdrop-filter backdrop-blur-md bg-opacity-10 bg-black text-glow">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img src="https://placehold.co/50x50/00C0FF/E0FFFF?text=TM" alt="Earth AI Logo" class="h-10 w-10 rounded-full" />
+                <span class="text-xl font-bold">Earth AI</span>
+            </div>
+            <div class="flex space-x-8">
+                <a href="#" data-page="home" class="nav-link text-lg hover:text-[#0066FF] transition-colors duration-300 relative pb-1">AI World</a>
+                <a href="#" data-page="solutions" class="nav-link text-lg hover:text-[#0066FF] transition-colors duration-300 relative pb-1">AI Solutions</a>
+                <a href="#" data-page="vision" class="nav-link text-lg hover:text-[#0066FF] transition-colors duration-300 relative pb-1">AI Vision</a>
+                <a href="#" data-page="contact" class="nav-link text-lg hover:text-[#0066FF] transition-colors duration-300 relative pb-1">Let’s Talk</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Pages Container -->
+    <main id="pages-container" class="relative z-10 w-full min-h-screen pt-24 overflow-y-auto">
+        <!-- Home Page (AI World) -->
+        <section id="home-page" class="page-section active pt-20 pb-40 text-center">
+            <div class="container mx-auto px-4">
+                <h1 class="text-6xl md:text-8xl font-bold text-glow mb-4 typing-effect">Building Your Future With AI</h1>
+                <p class="text-xl md:text-2xl text-[#E0FFFF] mb-12">We are the architects of tomorrow's solutions, shaping a future where intelligent systems transform how you work, create, and grow, forging pathways on the crystal frontier.</p>
+                <div class="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-8">
+                    <button class="btn-glow px-8 py-4 bg-transparent border-2 border-[#00C0FF] text-xl font-bold rounded-full hover:bg-opacity-20 hover:bg-[#00C0FF] transition-all duration-300">
+                        Explore Solutions
+                    </button>
+                    <button class="btn-glow px-8 py-4 bg-transparent border-2 border-[#0066FF] text-xl font-bold rounded-full hover:bg-opacity-20 hover:bg-[#0066FF] transition-all duration-300">
+                        Watch Demo
+                    </button>
+                </div>
+
+                <div class="mt-40">
+                    <h2 class="text-4xl font-bold mb-12 text-glow">Our Expertise</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                        <div class="holographic-card p-8 rounded-2xl flex flex-col items-center text-center">
+                            <i class="fas fa-sitemap text-5xl mb-4 text-[#00C0FF]"></i>
+                            <h3 class="text-2xl font-bold mb-2">AaaS</h3>
+                            <p>AI as a Service. Seamlessly integrate our powerful AI models into your business.</p>
+                        </div>
+                        <div class="holographic-card p-8 rounded-2xl flex flex-col items-center text-center">
+                            <i class="fas fa-robot text-5xl mb-4 text-[#0066FF]"></i>
+                            <h3 class="text-2xl font-bold mb-2">Agentic AI</h3>
+                            <p>Intelligent, autonomous agents that perform complex tasks on your behalf.</p>
+                        </div>
+                        <div class="holographic-card p-8 rounded-2xl flex flex-col items-center text-center">
+                            <i class="fas fa-microchip text-5xl mb-4 text-[#8A2BE2]"></i>
+                            <h3 class="text-2xl font-bold mb-2">Generative AI</h3>
+                            <p>Unleash creativity with models that generate images, text, code, and more.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Solutions Page -->
+        <section id="solutions-page" class="page-section hidden pt-20 pb-40">
+            <div class="container mx-auto px-4">
+                <h2 class="text-5xl md:text-6xl font-bold mb-16 text-glow text-center">AI Solutions</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-bolt text-4xl mb-4 text-[#00C0FF]"></i>
+                        <h3 class="text-2xl font-bold mb-2">AI Integration & Automation</h3>
+                        <p>Streamline your workflows with smart, automated systems.</p>
+                    </div>
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-brain text-4xl mb-4 text-[#0066FF]"></i>
+                        <h3 class="text-2xl font-bold mb-2">Agentic AI Setup</h3>
+                        <p>Deploy custom AI agents to manage complex, multi-step tasks.</p>
+                    </div>
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-building text-4xl mb-4 text-[#8A2BE2]"></i>
+                        <h3 class="text-2xl font-bold mb-2">Business Automation Consulting</h3>
+                        <p>Expert guidance to identify and automate key business processes.</p>
+                    </div>
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-comments text-4xl mb-4 text-[#00C0FF]"></i>
+                        <h3 class="text-2xl font-bold mb-2">Custom Chatbots</h3>
+                        <p>Develop intelligent chatbots tailored to your customer service needs.</p>
+                    </div>
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-code text-4xl mb-4 text-[#0066FF]"></i>
+                        <h3 class="text-2xl font-bold mb-2">AI Website & Software Building</h3>
+                        <p>Build stunning, AI-powered digital products from the ground up.</p>
+                    </div>
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-rocket text-4xl mb-4 text-[#8A2BE2]"></i>
+                        <h3 class="text-2xl font-bold mb-2">AI App Development</h3>
+                        <p>Create powerful mobile and web applications with integrated AI functionality.</p>
+                    </div>
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-cubes text-4xl mb-4 text-[#00C0FF]"></i>
+                        <h3 class="text-2xl font-bold mb-2">Generative Engine Optimization (GEO & AEO)</h3>
+                        <p>Optimize your content for AI-driven search and generative platforms.</p>
+                    </div>
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-database text-4xl mb-4 text-[#0066FF]"></i>
+                        <h3 class="text-2xl font-bold mb-2">Data Model Training</h3>
+                        <p>Fine-tune and train custom AI models on your proprietary data.</p>
+                    </div>
+                    <div class="holographic-card p-8 rounded-2xl">
+                        <i class="fas fa-pen-nib text-4xl mb-4 text-[#8A2BE2]"></i>
+                        <h3 class="text-2xl font-bold mb-2">AI Content Services</h3>
+                        <p>Generate high-quality articles, marketing copy, and creative content with AI.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Vision Page -->
+        <section id="vision-page" class="page-section hidden pt-20 pb-40">
+            <div class="container mx-auto px-4">
+                <h2 class="text-5xl md:text-6xl font-bold mb-16 text-glow text-center">Our Vision: The Crystal Frontier</h2>
+                <div class="flex flex-col lg:flex-row items-center lg:space-x-12 mb-20">
+                    <div class="lg:w-1/2 mb-8 lg:mb-0">
+                        <img src="https://placehold.co/800x600/00C0FF/E0FFFF?text=Human-Robot+Interaction" alt="Human and robot shaking hands" class="holographic-card w-full rounded-2xl" />
+                    </div>
+                    <div class="lg:w-1/2">
+                        <h3 class="text-4xl font-bold mb-4">Origins: The First Spark</h3>
+                        <p class="text-lg">Earth AI began with a simple, yet profound question: what if technology could not only serve humanity, but partner with it? Our founders, pioneers in the field, built the first prototypes of what would become the crystal frontier. We are a testament to the idea that the future is not about replacing human ingenuity, but augmenting it.</p>
+                    </div>
+                </div>
+                <div class="flex flex-col lg:flex-row items-center lg:space-x-12">
+                    <div class="lg:w-1/2 mb-8 lg:mb-0 order-2 lg:order-1">
+                        <h3 class="text-4xl font-bold mb-4">Future Trajectories: Nexus of Possibility</h3>
+                        <p class="text-lg">Our vision extends beyond the horizon. We are building a "Nexus of Possibility" where every challenge is met with an intelligent solution. From autonomous systems that manage global logistics to personal AI companions that enhance daily life, we are charting a course for a world where technology is seamlessly integrated and universally beneficial.</p>
+                    </div>
+                    <div class="lg:w-1/2 order-1 lg:order-2">
+                        <img src="https://placehold.co/800x600/0066FF/E0FFFF?text=Futuristic+City" alt="Futuristic city built with AI" class="holographic-card w-full rounded-2xl" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Let's Talk Page -->
+        <section id="contact-page" class="page-section hidden pt-20 pb-40">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-5xl md:text-6xl font-bold mb-12 text-glow">Let’s Talk: Advanced Communication Nexus</h2>
+                <p class="text-xl mb-12">Submit your query below, and we'll establish a direct connection to forge the future.</p>
+                <form id="contact-form" class="max-w-xl mx-auto space-y-6">
+                    <div>
+                        <input type="text" id="name" placeholder="Name" class="w-full p-4 rounded-xl holographic-card bg-transparent border border-[#00C0FF] focus:outline-none focus:ring-2 focus:ring-[#0066FF] text-lg text-glow" required>
+                    </div>
+                    <div>
+                        <input type="email" id="email" placeholder="Email" class="w-full p-4 rounded-xl holographic-card bg-transparent border border-[#00C0FF] focus:outline-none focus:ring-2 focus:ring-[#0066FF] text-lg text-glow" required>
+                    </div>
+                    <div>
+                        <textarea id="message" rows="5" placeholder="Message" class="w-full p-4 rounded-xl holographic-card bg-transparent border border-[#00C0FF] focus:outline-none focus:ring-2 focus:ring-[#0066FF] text-lg text-glow" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-glow px-8 py-4 bg-transparent border-2 border-[#8A2BE2] text-xl font-bold rounded-full hover:bg-opacity-20 hover:bg-[#8A2BE2] transition-all duration-300">
+                        Send Transmission
+                    </button>
+                </form>
+                <div id="contact-success" class="hidden mt-8 text-2xl font-bold text-glow">
+                    Transmission received! We’ll establish connection very soon ✨
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Chatbot Icon -->
+    <div id="chatbot-icon" class="fixed bottom-8 right-8 z-50">
+        <div class="w-16 h-16 rounded-full btn-glow flex items-center justify-center cursor-pointer bg-transparent border-2 border-[#00C0FF] hover:bg-opacity-20 hover:bg-[#00C0FF] transition-all duration-300">
+            <i class="fas fa-robot text-3xl text-[#E0FFFF]"></i>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="relative z-20 w-full p-8 backdrop-filter backdrop-blur-md bg-opacity-10 bg-black text-glow">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+            <div class="mb-4 md:mb-0">
+                <img src="https://placehold.co/50x50/00C0FF/E0FFFF?text=TM" alt="Earth AI Logo" class="h-12 w-12 rounded-full mx-auto md:mx-0" />
+                <p class="mt-2 text-sm">© 2025 Earth AI. All rights reserved.</p>
+            </div>
+            <div class="flex flex-wrap justify-center space-x-6 mb-4 md:mb-0">
+                <a href="#" class="text-sm hover:text-[#0066FF] transition-colors duration-300">AI World</a>
+                <a href="#" class="text-sm hover:text-[#0066FF] transition-colors duration-300">AI Solutions</a>
+                <a href="#" class="text-sm hover:text-[#0066FF] transition-colors duration-300">AI Vision</a>
+                <a href="#" class="text-sm hover:text-[#0066FF] transition-colors duration-300">Let’s Talk</a>
+            </div>
+            <div class="flex flex-col items-center md:items-end">
+                <p class="mb-2 text-glow">Ready to co-create your future with AI?</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-2xl hover:text-[#0066FF] transition-colors duration-300"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="text-2xl hover:text-[#0066FF] transition-colors duration-300"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-2xl hover:text-[#0066FF] transition-colors duration-300"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Three.js Background
+        let scene, camera, renderer, particles;
+        let mouseX = 0, mouseY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+
+        function initBackground() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const particleCount = 2000;
+            const size = 500;
+
+            for (let i = 0; i < particleCount; i++) {
+                const x = (Math.random() - 0.5) * size;
+                const y = (Math.random() - 0.5) * size;
+                const z = (Math.random() - 0.5) * size;
+                vertices.push(x, y, z);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+            const material = new THREE.PointsMaterial({
+                color: 0x00c0ff,
+                size: 1,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                sizeAttenuation: true,
+                opacity: 0.8
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            camera.position.z = 200;
+
+            window.addEventListener('resize', onWindowResize, false);
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+        }
+
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = (event.clientX - windowHalfX) * 0.2;
+            mouseY = (event.clientY - windowHalfY) * 0.2;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            particles.rotation.x += 0.0005;
+            particles.rotation.y += 0.0005;
+
+            camera.position.x += (mouseX - camera.position.x) * 0.05;
+            camera.position.y += (-mouseY - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function() {
+            initBackground();
+            animate();
+            setupPageNavigation();
+            setupContactForm();
+            typeWriterEffect();
+        };
+        
+        // Typing Effect
+        function typeWriterEffect() {
+            const textElement = document.querySelector('.typing-effect');
+            const text = "Building Your Future With AI";
+            textElement.textContent = ""; // Clear existing text
+            let i = 0;
+            const speed = 100; // milliseconds
+
+            function type() {
+                if (i < text.length) {
+                    textElement.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        // Page Navigation
+        function setupPageNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page-section');
+            const pagesContainer = document.getElementById('pages-container');
+
+            function showPage(pageId) {
+                pages.forEach(page => {
+                    page.classList.add('hidden');
+                    page.classList.remove('active');
+                });
+                document.getElementById(pageId).classList.remove('hidden');
+                document.getElementById(pageId).classList.add('active');
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-page') === pageId.replace('-page', '')) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('data-page') + '-page';
+                    showPage(pageId);
+                });
+            });
+
+            // Set initial active link
+            showPage('home-page');
+        }
+
+        // Contact Form
+        function setupContactForm() {
+            const contactForm = document.getElementById('contact-form');
+            const successMessage = document.getElementById('contact-success');
+
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                // In a real application, this would send data to a backend.
+                // For this example, we'll just show the success message.
+                contactForm.style.display = 'none';
+                successMessage.classList.remove('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
